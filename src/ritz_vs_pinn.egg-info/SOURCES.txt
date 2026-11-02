@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+src/ritz_vs_pinn/config.py
+src/ritz_vs_pinn.egg-info/PKG-INFO
+src/ritz_vs_pinn.egg-info/SOURCES.txt
+src/ritz_vs_pinn.egg-info/dependency_links.txt
+src/ritz_vs_pinn.egg-info/requires.txt
+src/ritz_vs_pinn.egg-info/top_level.txt
