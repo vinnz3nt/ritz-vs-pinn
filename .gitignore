@@ -1,0 +1,8 @@
+# LaTeX build output
+report/build/
+report/main.pdf
+
+# Python
+.venv/
+__pycache__/
+*.egg-info/
