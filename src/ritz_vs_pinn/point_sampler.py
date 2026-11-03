@@ -7,18 +7,13 @@ def interior_sampler(N, D, rnd_key):
     return jxr.uniform(rnd_key, shape=(N,D),minval=1e-8, maxval=1-1e-8)
 
 
-def boundary_sampler(N,D,rnd_key):
-    side_nmr = int(2*D)
+def boundary_sampler(N, D, rnd_key):
     def suppport_function(D,it):
-        side = jxr.randint(rnd_key+it, shape=(1,), minval=0, maxval=side_nmr, dtype=jnp.int32)
+        side = jxr.randint(rnd_key+it, shape=(1,), minval=0, maxval=D, dtype=jnp.int32)
+        num = jxr.randint(rnd_key+it, shape=(1,), minval=0, maxval=2, dtype=jnp.int32)
         sample = jxr.uniform(rnd_key+it, shape = (1,D), minval = 0, maxval = 1)
-        if side % 2 == 0:
-            side = side//2
-            sample = sample.at[0,side].set(0)
-        else:
-            side = side//2
-            sample = sample.at[0,side].set(1)
         
+        sample = sample.at[0,side].set(num)
         return sample
     
     samples = suppport_function(D,0)
