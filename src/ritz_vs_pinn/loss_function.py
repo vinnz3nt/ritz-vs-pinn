@@ -17,7 +17,7 @@ def pinn_loss_fn(network, f, g, N, DIMS, ip, bp, weights):
     interior_loss_fn = np.mean(np.square(f_evaluated + dubble_network_grad))
 
     #boundary loss
-    bnd_loos_fn = np.mean(np.square(network(ip) - g(ip)))
+    bnd_loos_fn = np.mean(np.square(network(bp) - g(bp)))
 
     #full loss function
     total_loss = interior_loss_fn + bnd_loos_fn
