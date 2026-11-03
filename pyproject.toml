@@ -8,4 +8,7 @@ dependencies = [
     "scipy",
     "matplotlib",
     "jax",
+    "equinox",
+    "optax",
+    "tqdm"
 ]
