@@ -1,0 +1,49 @@
+Tables such as \tabref{results} can also be used. Be sure to also
+refer to the table in the text and offer a discussion about the
+results. Note the use of \verb!\tabref{<table label>}! to refefence a
+table.
+
+Sometimes it can be nice to include code as well, see
+Listing~\ref{CodeTest} for an example. However, think carefully of why
+the code should be included. Who will actually read and understand it?
+
+\begin{table}[ht]
+  \centering % for centered tables
+  \begin{tabular}{c r r r}
+    Case & Method \#1 & Method \#2 & Method \#3 \\
+    \hline
+    1 & 50 & 837 & 970  \\
+    2 & 47 & 877 & 230  \\
+    3 & 31 & -  & -  \\
+    \hline
+  \end{tabular}
+  \caption{Model results. Note that method \#2 and \#3 did not finish
+    for the third case. \blabla{more explanation goes here}
+    \DO{Explain all notation in the table, e.g., the dashes in this
+      example. You should also refer to the table in the main text.}
+    \DONT{Professional tables generally \emph{do not have vertical
+        lines}.}}
+  \label{tab:results}
+\end{table} 
+
+\begin{lstlisting}[language = Matlab, label = CodeTest, caption =
+  Sample code.]
+function c = repeat(a,b)
+%REPEAT Repeat elements of vector.
+%   C = REPEAT(A,B) returns A repeated by B, see the example
+%   below. Both arguments are assumed to be row vectors of the same
+%   length and B must contain nonnegative integers only.
+%
+%   No error-checking is performed.
+%
+%   Example:
+%     a = [0 1 pi inf nan -nan];
+%     b = [1 4 0   2   3    0 ];
+%     c = repeat(a,b) % returns c = [0 1 1 1 1 inf inf nan nan nan]
+
+% S. Engblom 2005-10-14
+
+% can't beat this!
+ix = cumsum(sparse(1,cumsum([1 b]),1));
+c = a(ix(1:end-1));
+\end{lstlisting}

@@ -1,0 +1,211 @@
+% \documentclass[a4paper,11pt,twoside]{article}
+\documentclass[a4paper,11pt,oneside]{article}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{enumitem}
+\usepackage[latin1]{inputenc}
+\usepackage[swedish,english]{babel}
+\usepackage[pdftex]{graphicx}
+\usepackage{xcolor}
+\usepackage[pdftitle={The PDF title}, % *** edit
+pdfauthor={The Authors}, % *** edit
+pdffitwindow=true,
+breaklinks=true,
+colorlinks=true,
+urlcolor=blue,
+linkcolor=red,
+citecolor=red,
+anchorcolor=red]{hyperref}
+\usepackage{doi}
+\usepackage[numbers,sort]{natbib}
+\usepackage{itkompendium}
+
+\usepackage{listings}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=C,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=3
+}
+
+% **************************************************************************
+
+% project report checklist
+\newlist{todolist}{itemize}{2}
+\setlist[todolist]{label=$\square$}
+\newcommand{\itemdone}{\item[$\boxtimes$] }
+     
+\numberwithin{equation}{section}
+\numberwithin{table}{section}
+\numberwithin{figure}{section}
+
+% how to reference figures, tables and sections:
+\newcommand{\figref}[1]{Figure~\ref{fig:#1}}
+\newcommand{\tabref}[1]{Table~\ref{tab:#1}}
+\newcommand{\secref}[1]{\S\ref{sec:#1}}
+
+% do/don't
+\definecolor{Green}{rgb}{0.15,0.75,0.35}
+\definecolor{Red}{rgb}{0.75,0.05,0.1}
+\newcommand{\DO}[1]{\textcolor{Green}{\{Do:\}}#1}
+\newcommand{\DONT}[1]{\textcolor{Red}{\{Don't:\}}#1}
+\newcommand{\blabla}[1]{\textit{\{#1...\}}}
+
+% how to show that you have reviewed something
+\newcommand{\review}[1]{\textcolor{blue}{#1}}
+
+% ******************************************************************
+
+\begin{document}
+
+\selectlanguage{english}
+
+\titel{Project in Computational Science Report Template} % *** edit
+%\undertitel{Subtitle (if needed)} % (only if needed!) *** edit
+
+\marginaltext{PROJECT REPORT}
+
+\forfattare{Stefan Engblom, Author Two, Author Three} % *** edit
+% generally use the stile "Surname Familyname" (+initials if you so
+% prefer)
+
+\rapportnummer{Project in Computational Science: Report} 
+
+\datum{\today}
+
+\itkompendium
+
+\begin{abstract} % *** edit
+  This is the abstract of the report. An abstract is a short focused
+  summary of what you have done. It is important that it can be
+  understood in itself. A good abstract attracts a reader!
+
+  \DO{Explain the general problem and context. Focus a bit on what you
+    did and what the general outcome and conclusion was. Use a formal
+    language.}
+
+  \DONT{Avoid informal language: no use of \emph{don't}, \emph{isn't}
+    etc. Never pick variables from your setting and insert into the
+    abstract. Avoid references unless you have very good reasons. Do
+    not use acronyms without defining them.}
+\end{abstract}
+
+\clearpage
+
+\tableofcontents
+
+\clearpage
+
+% ******************************************************************
+
+\section{Introduction}
+\input{sections/Introduction/introduction}
+
+% ******************************************************************
+
+\section{Theory}
+\input{sections/Theory/theory}
+
+\subsection{Details}
+\input{sections/Theory/details}
+
+\subsubsection{Too small details}
+\input{sections/Theory/too small details}
+
+% ******************************************************************
+
+\section{Methods}
+\label{sec:methods}
+
+\input{sections/Method/method}
+
+\subsection{Algorithm solving the main problem}
+
+\input{sections/Method/algorithm solving the main problem}
+
+% ******************************************************************
+
+\section{Results}
+\label{sec:results}
+
+\input{sections/Results/results}
+
+\subsection{Figures}
+
+\input{sections/Results/figures}
+
+\subsection{Tables and Code}
+
+\input{sections/Results/tables and code}
+
+\subsection{Project report checklist}
+
+\input{sections/Results/project report checklist}
+
+\subsection{How to incorporate feedback}
+
+\input{sections/Results/how to incorporate feedback}
+
+
+% ******************************************************************
+
+% *** it looks nicer if the final conclusion is not mixed with figures
+% belonging to other sections, so sometimes either one of \clearpage
+% or \cleardoublepage is needed
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+\input{sections/Conclusions/conclusion}
+
+\subsection*{Acknowledgment}
+
+\input{sections/Conclusions/Acknowledgment}
+
+\medskip
+
+\noindent
+\texttt{ChatGPT 3.5} was used as a text-editing tool in minor parts of
+this text. The Acknowledgment section, however, was generated in its
+entirety in this way.
+
+% ******************************************************************
+
+\bibliographystyle{abbrvnat}
+\bibliography{references.bib}
+
+% ******************************************************************
+
+\clearpage
+
+\appendix
+
+\section{Not so often and for very good reasons}
+
+\blabla{explanation of what this Appendix brings}
+
+\DO{If you absolutely want an Appendix you should explain what the
+  purpose is and also refer to it in the main report. Otherwise you
+  can most likely skip it?} \DONT{Never add ``all the figures'' or
+  ``additional results and code''. Who should care?}
+
+\section{Most likely not}
+
+\blabla{also need to explain this Appendix}
+
+\end{document}
+% ******************************************************************

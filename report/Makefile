@@ -23,13 +23,21 @@ LATEXMK := latexmk -$(patsubst pdflatex,pdf,$(ENGINE)) $(SHELL_ESCAPE) \
            -synctex=1 -file-line-error -interaction=nonstopmode -halt-on-error \
            -outdir=$(BUILD)
 
-.PHONY: pdf watch clean distclean info
+.PHONY: pdf suppress watch clean distclean info
 .DEFAULT_GOAL := pdf
 
 pdf:
+	@find sections -type d -exec mkdir -p $(BUILD)/{} \;
 	$(LATEXMK) $(MAIN)
 	@cp $(BUILD)/$(JOB).pdf $(OUT).pdf
 	@echo "==> $(OUT).pdf built with $(ENGINE)"
+
+suppress:   ## build past errors (e.g. missing images); check build/$(JOB).log afterwards
+	@find sections -type d -exec mkdir -p $(BUILD)/{} \;
+	-$(subst -halt-on-error,-f,$(LATEXMK)) $(MAIN)
+	@cp $(BUILD)/$(JOB).pdf $(OUT).pdf
+	@echo "==> $(OUT).pdf built with $(ENGINE) (errors suppressed)"
+	@grep -n "Error" $(BUILD)/$(JOB).log || true
 
 watch:   ## rebuild on every save
 	$(LATEXMK) -pvc -view=none -e '$$success_cmd=q/cp %D $(OUT).pdf/' $(MAIN)

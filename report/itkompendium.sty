@@ -1,0 +1,126 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% itkompendium.sty
+% Version 1.0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2004-09-13
+% Författat av Björn Schröder
+%
+% Very minor update by Stefan Engblom
+% 2024-02-02
+% 
+% Exempel på användning:
+% \documentclass[a4paper,10pt,twoside]{article}
+% \input isolatin.tex
+% \usepackage[swedish]{babel}
+% \usepackage{itkompendium}
+% \begin{document}
+% \titel{Så här ser titeln ut}
+% \undertitel{och detta är den underbart långa och förklarande undertiteln som
+%   kan gå över flera rader}
+% \framsidebild{\includegraphics[width = \textwidth]{Bilder/logo}\\\vspace{1cm}}
+% \marginaltext{EXAMENSARBETE}
+% \forfattare{Författare Författaresson}
+% \rapportnummer{Version 0.01}
+% \datum{September 2004}
+% \itkompendium
+%
+\usepackage{color}
+\usepackage{graphicx}
+\newif\iftitel
+\newif\ifundertitel
+\newif\ifforfattare
+\newif\ifmarginaltext
+\newif\ifsigill
+\newif\ifframsidebild
+\newif\ifrapportnummer
+\newif\ifdatum
+\sigilltrue
+\def\theavdelning{Department of Information Technology}
+%
+\def\titel#1{\titeltrue\def\thetitel{#1}}
+\def\undertitel#1{\undertiteltrue\def\theundertitel{#1}}
+\def\forfattare#1{\forfattaretrue\def\theforfattare{#1}}
+\def\marginaltext#1{\marginaltexttrue\def\themarginaltext{#1}}
+\def\framsidebild#1{\framsidebildtrue\sigillfalse\def\theframsidebild{#1}}
+\def\rapportnummer#1{\rapportnummertrue\def\therapportnummer{#1}}
+\def\datum#1{\datumtrue\def\thedatum{#1}}
+\def\avdelning#1{\def\theavdelning{Dept of Information Technology, #1}}
+\def\avskiljare{ \rule{\textwidth}{1 pt}\smallskip}
+%
+\pagestyle{empty}
+\definecolor{FRAMljusgra}{gray}{0.9}
+\definecolor{FRAMmellangra}{gray}{0.7}
+\definecolor{FRAMmorkgra}{gray}{0.5}
+\newlength{\FRAMsparaunit}
+\setlength{\FRAMsparaunit}{\unitlength}
+\setlength{\unitlength}{1 cm}
+\newlength{\FRAMsidbredd}
+\setlength{\FRAMsidbredd}{135 mm}
+\font\FRAMtitelfont=cmssdc28
+\font\FRAMundertitelfont=cmss20
+\font\FRAMmarginalfont=cmssdc40
+\font\FRAMnormalfont=cmss16
+\font\FRAMrapportnrfont=cmssbx16
+\font\FRAMinstfont=cmcsc12
+%
+\def\itkompendium{
+\hspace{10 em}\hspace{-39 mm} % Så den ligger ungefär lika vid 10,11 eller 12 pt
+\begin{picture}(0,0)
+  % Marginalen 
+  \put(-4.2,-26){\colorbox{FRAMljusgra}{\makebox(4.7,32){}}}
+  % Obs sigillen skall ligga under bården, men över marginalen
+  \ifsigill{
+    \put(4.35,-23.3){%
+      \includegraphics[scale = 1]{UU_sigill_NV_gra}}
+    }
+  \else{
+    \put(-3.489,-23.3){%
+      \includegraphics[scale = 1]{UU_marginalsigill_5Svart}}
+    }\fi
+  % Bården
+  \put(-3.7,-25.6){\colorbox{FRAMmellangra}{\makebox(21,2.2){}}}
+  \put(-4.2,-25.6){\colorbox{FRAMmorkgra}{\makebox(4.7,2.2){}}}
+  % Loggan
+  \put(-3.4,0){\includegraphics[width = 42 mm]{UU_logo_pc_2f_42}}
+  
+  \put(1,-23.8){\parbox{1.1\FRAMsidbredd}{\centering%
+      {\FRAMinstfont \theavdelning}}}
+  \iftitel{\put(2,-3.5){\parbox{\FRAMsidbredd}{%
+        {\FRAMtitelfont \thetitel \bigskip\\}
+        \ifundertitel{
+          {\FRAMundertitelfont \theundertitel \\}
+          }\fi
+  % Dra streck om något mer
+        \ifforfattare{\avskiljare}
+        \else{
+          \ifrapportnummer{\avskiljare}
+          \else{
+            \ifdatum{\avskiljare
+              }\fi
+            }\fi
+          }\fi
+
+        \ifforfattare{
+          {\FRAMnormalfont \theforfattare\medskip \\}
+          }\fi
+        \ifrapportnummer{
+          {\FRAMrapportnrfont \therapportnummer\smallskip \\}
+          }\fi
+        \ifdatum{
+          {\FRAMnormalfont~\\ \thedatum \smallskip\\}
+          }\fi
+        }}
+    }\fi
+  \ifmarginaltext{
+    \put(-1.85,-19){\rotatebox{90}{% 
+        \textcolor{FRAMmellangra}{\FRAMmarginalfont \themarginaltext}}}
+    }\fi 
+  \ifframsidebild{
+    \put(2,-22.3){\parbox[b]{\FRAMsidbredd}{\centering \theframsidebild}}
+    }\fi
+\end{picture}
+\cleardoublepage
+\setlength{\unitlength}{\FRAMsparaunit}
+\pagestyle{plain}
+\setcounter{page}{1}
+}
