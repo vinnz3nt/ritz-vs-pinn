@@ -3,6 +3,10 @@ import equinox as eqx
 import jax.random as jxr
 import jax.numpy as jnp
 
+def interior_sampler(N, D, rnd_key):
+    return jxr.uniform(rnd_key, shape=(N,D),minval=1e-8, maxval=1-1e-8)
+
+
 def boundary_sampler(N,D,rnd_key):
     side_nmr = int(2*D)
     def suppport_function(D,it):
