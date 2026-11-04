@@ -4,8 +4,11 @@ import jax.random as jxr
 import jax.numpy as jnp
 
 def pinn_loss_fn(network, f, g, interior_points, boundary_points, weight):
+    print(interior_points.shape)
     f_evaluated = jax.vmap(f)(interior_points)
-    dubble_network_grad = jax.vmap(jax.grad(jax.grad(network)))(interior_points)
+    # dubble_network_grad = jax.vmap(jax.grad(jax.grad(network)))(interior_points)
+    laplacian = lambda x: jnp.trace(jax.hessian(network)(x))
+    dubble_network_grad = jax.vmap(laplacian)(interior_points)
 
     #interior loss
     interior_loss_fn = jnp.mean(jnp.square(f_evaluated + dubble_network_grad))

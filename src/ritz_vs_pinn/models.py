@@ -5,9 +5,9 @@ import jax.random as jr
 key = jr.PRNGKey(42)
 key, init_key = jr.split(key)
 
-def build_network(width, depth, activation):
+def build_network(in_size, width, depth, activation):
     net = eqx.nn.MLP(
-        in_size="vector",
+        in_size=in_size,
         out_size="scalar",
         width_size=width,
         depth=depth,
