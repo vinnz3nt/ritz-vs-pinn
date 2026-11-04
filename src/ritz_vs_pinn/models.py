@@ -2,10 +2,7 @@ import jax
 import equinox as eqx
 import jax.random as jr
 
-key = jr.PRNGKey(42)
-key, init_key = jr.split(key)
-
-def build_network(in_size, width, depth, activation):
+def build_network(in_size, width, depth, activation, init_key):
     net = eqx.nn.MLP(
         in_size=in_size,
         out_size="scalar",
@@ -15,12 +12,3 @@ def build_network(in_size, width, depth, activation):
         key=init_key
         )
     return net
-
-simple_pinn = eqx.nn.MLP(
-    in_size="scalar",
-    out_size="scalar",
-    width_size=10,
-    depth=4,
-    activation=jax.nn.sigmoid,
-    key=init_key,
-)
