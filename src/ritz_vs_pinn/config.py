@@ -1,7 +1,7 @@
 """Central project configuration: filesystem paths and random keys.
 
 Usage:
-    from ritz_vs_pinn.config import PATHS, KEYS, checkpoint_path, figure_path
+    from ritz_vs_pinn.config im port PATHS, KEYS, checkpoint_path, figure_path
 
     model_key = KEYS.model_init
     eqx.tree_serialise_leaves(checkpoint_path("pinn_poisson"), model)
@@ -103,3 +103,8 @@ KEYS = Keys()
 def keys_for_seed(seed: int) -> Keys:
     """Fresh key set for a different seed, e.g. for repeated runs."""
     return Keys(seed=seed)
+
+
+ACTIVATIONS = {
+    "sigmoid": jax.nn.sigmoid,
+}
