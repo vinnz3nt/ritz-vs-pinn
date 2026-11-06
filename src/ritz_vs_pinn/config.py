@@ -16,6 +16,8 @@ from pathlib import Path
 import jax
 import jax.random as jr
 
+from datetime import datetime
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -47,6 +49,14 @@ PATHS = Paths()
 def checkpoint_path(name: str, ext: str = ".eqx") -> Path:
     PATHS.checkpoints.mkdir(parents=True, exist_ok=True)
     return PATHS.checkpoints / f"{name}{ext}"
+
+
+def run_dir(name: str, timestamp: bool = True) -> Path:
+    """Create and return checkpoints/<name>[_<timestamp>]/."""
+    folder = f"{name}_{datetime.now():%Y-%m-%d_%H-%M-%S}" if timestamp else name
+    path = PATHS.checkpoints / folder
+    path.mkdir(parents=True, exist_ok=False)  # refuse to overwrite an existing run
+    return path
 
 
 def figure_path(name: str, ext: str = ".pdf") -> Path:
