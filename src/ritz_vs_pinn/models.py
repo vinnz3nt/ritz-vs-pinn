@@ -1,9 +1,9 @@
 import jax
 import equinox as eqx
 import jax.random as jr
-from ritz_vs_pinn.config import ACTIVATIONS
+from ritz_vs_pinn.config import ACTIVATIONS, KEYS
 
-def build_network(hyper_params, init_key):
+def build_network(hyper_params):
 
     net = eqx.nn.MLP(
         in_size=hyper_params["in_size"],
@@ -11,6 +11,6 @@ def build_network(hyper_params, init_key):
         width_size=hyper_params["width"],
         depth=hyper_params["depth"],
         activation=ACTIVATIONS[hyper_params["activation"]],
-        key=init_key
+        key=KEYS.get(hyper_params["keyword"])
         )
     return net
