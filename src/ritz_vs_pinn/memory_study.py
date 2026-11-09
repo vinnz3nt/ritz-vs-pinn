@@ -60,7 +60,7 @@ def log_memory(n_per_dim, dim):
     marker.unlink()   # build finished, so this run is not a kill
     return A
 
-N_dofs = 2
-dims = np.arange(2,101,2)
+N_dofs = 14
+dims = np.arange(2,101,1)
 for i in dims:
     log_memory(N_dofs,i)

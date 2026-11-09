@@ -31,19 +31,3 @@ def laplacian_hypercube(dofs, dim):
         )
  
     return A.tocsr()
-
-
-
-def log_memory(build,dofs,dim, log="memory_log.csv"):
-    tracemalloc.start()
-    A = laplacian_hypercube(dofs,dim)                                # your build function, no arguments
-    _, peak = tracemalloc.get_traced_memory()    # peak Python memory during build
-    tracemalloc.stop()
-
-    new_file = checkpoint_path(f'{dofs},{dim}')
-    with open(log, "a", newline="") as f:
-        w = csv.writer(f)
-        if new_file:
-            w.writerow(["dofs", "dim", "peak_mb"])
-        w.writerow([A.shape[0], dim, round(peak / 2**20, 3)])
-    return A
