@@ -7,4 +7,5 @@ report/main.pdf
 __pycache__/
 *.egg-info/
 src/ritz_vs_pinn/test.py
-checkpoints/*
+
+checkpoints/*/*.eqx
