@@ -117,4 +117,5 @@ def keys_for_seed(seed: int) -> Keys:
 
 ACTIVATIONS = {
     "sigmoid": jax.nn.sigmoid,
+    "tanh" : jax.nn.tanh,
 }
