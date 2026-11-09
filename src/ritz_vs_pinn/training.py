@@ -4,7 +4,7 @@ from tqdm import tqdm
 import jax.random as jxr
 from ritz_vs_pinn.models import build_network
 from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler
-from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS
+from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEYS
 
 @eqx.filter_jit
 def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_interior, N_boundary, D, rnd_key):
@@ -25,7 +25,7 @@ def optimize(hyper_params):
     loss_history = []
     pbar = tqdm(range(hyper_params["n_epochs"]), desc="Training")
     for epoch in pbar:
-        rnd_key, step_key = jxr.split(hyper_params["rnd_key"])
+        rnd_key, step_key = jxr.split(KEYS.get(hyper_params['keyword']))
         network, opt_state, loss = make_step(
             network = network, 
             state = opt_state, 
