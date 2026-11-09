@@ -11,6 +11,6 @@ def build_network(hyper_params):
         width_size=hyper_params["width"],
         depth=hyper_params["depth"],
         activation=ACTIVATIONS[hyper_params["activation"]],
-        key=KEYS.get(hyper_params["keyword"])
+        key=hyper_params["rnd_key"]
         )
     return net

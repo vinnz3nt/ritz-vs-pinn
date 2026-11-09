@@ -14,7 +14,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import jax
+import jax.numpy as jnp
 import jax.random as jr
+import optax
+from ritz_vs_pinn.loss_function import ritz_loss_fn, pinn_loss_fn
 
 from datetime import datetime
 
@@ -118,4 +121,21 @@ def keys_for_seed(seed: int) -> Keys:
 ACTIVATIONS = {
     "sigmoid": jax.nn.sigmoid,
     "tanh" : jax.nn.tanh,
+}
+
+OPTIMIZERS = {
+    "adam": optax.adam,
+}
+
+MMS_FUNCTIONS = {
+    "2d_sinus_sums_1":{
+        'f': lambda x: jnp.pi**2 / 4 * (jnp.sin(jnp.pi * x[0] / 2) + jnp.sin(jnp.pi * x[1] / 2)),
+        'g': lambda x: jnp.sin(jnp.pi * x[0]/2) + jnp.sin(jnp.pi * x[1]/2),
+        'u': lambda x: jnp.sin(jnp.pi * x[0]/2) + jnp.sin(jnp.pi * x[1]/2)
+    },
+}
+
+LOSS = {
+    "ritz":ritz_loss_fn,
+    "pinn":pinn_loss_fn
 }
