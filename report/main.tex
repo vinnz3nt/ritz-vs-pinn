@@ -70,6 +70,26 @@ anchorcolor=red]{hyperref}
 
 % ******************************************************************
 
+% ******************************************************************
+% ---------------------------------------------------------------
+% Objects  (\vect x, \mat A, \tens T)
+% ---------------------------------------------------------------
+\newcommand{\vect}[1]{\mathbf{#1}}          % vectors      alt: \mathbf{#1}, \vec{#1}, #1
+\newcommand{\mat}[1]{\bm{#1}}           % matrices     alt: \mathbf{#1}, #1
+\newcommand{\tens}[1]{\bm{\mathsf{#1}}} % tensors      alt: \mathcal{#1}
+\newcommand{\unitvec}[1]{\hat{\vect{#1}}} % unit vector
+\newcommand{\zerovec}{\vect{0}}         % zero vector
+\newcommand{\eye}{\mat{I}}              % identity matrix
+ 
+% ---------------------------------------------------------------
+% Operations  (\mat A\T, \mat A\herm, \mat A\inv)
+% ---------------------------------------------------------------
+\newcommand{\T}{^{\mathsf{T}}}          % transpose    alt: ^{\top}, ^{T}
+\newcommand{\herm}{^{\mathsf{H}}}       % conj. transp alt: ^{*}, ^{\dagger}
+\newcommand{\inv}{^{-1}}                % inverse
+\newcommand{\pinv}{^{+}}                % pseudo-inverse  alt: ^{\dagger}
+% ******************************************************************
+
 \begin{document}
 
 \selectlanguage{english}
@@ -121,11 +141,14 @@ anchorcolor=red]{hyperref}
 \section{Theory}
 \input{sections/Theory/theory}
 
-\subsection{Details}
-\input{sections/Theory/details}
+\subsection{Multi-Layer Perceptron}
+\input{sections/Theory/fully_connected}
+% \subsection{Details}
+% \input{sections/Theory/details}
 
-\subsubsection{Too small details}
-\input{sections/Theory/too small details}
+% \subsubsection{Too small details}
+% \input{sections/Theory/too small details}
+
 
 % ******************************************************************
 

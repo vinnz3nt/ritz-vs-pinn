@@ -1,6 +1,7 @@
 Partial differential equations (PDEs) are an integral part of many mathematical descriptions of the world we live in.
 Such equations describe the flow of fluids, the motion of the celestial bodies and the propagation of electromagnetic waves through space.
-Because of the vast usage areas of such equations it should come to no surprise that being able to solve and model such equations is of great importance for scientific and technological advancement. A general PDE in the domain $\Omega$ take the form
+Because of the vast usage areas of such equations it should come to no surprise that being able to solve and model such equations is of great importance for scientific and technological study. 
+A general PDE in the domain $\Omega$ take the form
 \begin{equation}
     \left\{
     \begin{aligned}
@@ -10,8 +11,9 @@ Because of the vast usage areas of such equations it should come to no surprise 
     \right. ,
     \label{eq: general PDE}
 \end{equation}
-where $\mathcal{L}$ and $\mathcal{B}$ are interior and boundary differential operators, respectively, $f$ is a the forcing function and $g$ is the boundary data. 
+where $\mathcal{L}$ and $\mathcal{B}$ are interior and boundary differential operators, respectively. $f$ is a the forcing function and $g$ is the boundary data. 
 
-The common way of solving these equations, given that it is impractical or in extreme cases impossible to find an analytical solution is to result to numerical solvers.
+Given that it is impractical---in some cases even impossible---to find an analytical solution to the PDE, 
+the common method is to result to numerical solvers. Such numerical methods usually consist of discretizing $\Omega$, $\mathcal L$ and $\mathcal B$, and solving the discretized PDE, $\mat D \vect u = \vect f$ using any viable iterative solver, commonly LU-factorisation is used.
 
  

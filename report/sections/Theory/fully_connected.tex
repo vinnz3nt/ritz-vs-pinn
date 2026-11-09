@@ -1,0 +1,10 @@
+Neural networks is a wide umbrella term used to refer to many different types of AI architectures. 
+Most commonly, the multi-layer perceptron (MLP). 
+The MLP is based on a sequence of $n$ fully connected (or dense) layers defined by
+\begin{align}
+h^{(1)} &= f(\mat W^{(1)} \vect x + \vect b^{(1)}), \\
+h^{(2)} &= f(\mat W^{(2)} \vect h^{(1)} + \vect b^{(2)}), \\
+\vdots \\
+h^{(n)} &= f(\mat W^{(n)} \vect h^{(n-1)} + \vect b^{(n)}),
+\end{align}
+where $h^{(i)}$ denotes the $i$:th hidden layer, $W^{(i)}$ and $b^{(i)}$ are the corresponding weights and biases, and $f$ is a non-linear activation function.
