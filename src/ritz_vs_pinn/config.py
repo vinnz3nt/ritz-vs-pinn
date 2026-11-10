@@ -121,6 +121,7 @@ def keys_for_seed(seed: int) -> Keys:
 ACTIVATIONS = {
     "sigmoid": jax.nn.sigmoid,
     "tanh" : jax.nn.tanh,
+    "relu" : jax.nn.relu
 }
 
 OPTIMIZERS = {
@@ -138,6 +139,11 @@ MMS_FUNCTIONS = {
         'g': lambda x: jnp.sin(jnp.pi * x[0]/2) + jnp.sin(jnp.pi * x[1]/2),
         'u': lambda x: jnp.sin(jnp.pi * x[0]/2) + jnp.sin(jnp.pi * x[1]/2)
     },
+    "general_sinus_sum": {
+        'f': lambda x: jnp.pi**2 / 4 * jnp.sum(jnp.sin(jnp.pi * x / 2)),
+        'g': lambda x: jnp.sum(jnp.sin(jnp.pi * x / 2)),
+        'u': lambda x: jnp.sum(jnp.sin(jnp.pi * x / 2)),
+    }
 }
 
 LOSS = {
