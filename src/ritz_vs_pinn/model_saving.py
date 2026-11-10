@@ -13,16 +13,17 @@ from ritz_vs_pinn.models import build_network
 
 MODEL_FILE = "model.eqx"
 HPARAMS_FILE = "hyperparams.json"
-HISTORY_FILE = "history.json"
+H1_ERROR_FILE = "H1_error.npz"
+L2_ERROR_FILE = "L2_error.npz"
+LOSS_FILE = "loss.npz"
 
-def model_store(name, model, hyper_params, history, timestamp=True) -> Path:
+def model_store(name, model, hyper_params, timestamp=True) -> Path:
     path = run_dir(name, timestamp)
     eqx.tree_serialise_leaves(path / MODEL_FILE, model)
     
     with open(path / HPARAMS_FILE, "w") as f:
         json.dump(hyper_params, f, indent=2)
-    with open(path / HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=2, default=lambda o: np.asarray(o).tolist())
+
     return path  # handy for printing or logging where the run went
 
 
@@ -36,10 +37,38 @@ def model_unpack(run):
         hyper_params = json.load(f)
     model_temp = build_network(hyper_params)
 
-    with open(path / HISTORY_FILE) as f:
-        history = json.load(f)
+    return eqx.tree_deserialise_leaves(path / MODEL_FILE, model_temp)
 
-    return eqx.tree_deserialise_leaves(path / MODEL_FILE, model_temp), history
+
+def history_store(loss, H1_error, L2_error, run):
+    if loss:
+        np.save(run / LOSS_FILE, loss)
+    if H1_error:
+        np.save(run / H1_ERROR_FILE, H1_error)
+    if L2_error:
+        np.save(run / L2_ERROR_FILE, L2_error)
+    print(f"Saved in {run}")
+
+
+def history_unpack(run):
+      """Load the training history saved by `history_store`.
+
+      `run` can be a folder name inside checkpoints/ or a full path.
+      Returns (loss, H1_error, L2_error); any that weren't saved come back as None.
+      """
+      path = Path(run)
+      if not path.is_absolute():
+          path = PATHS.checkpoints / path
+
+      def _load(filename):
+          file = path / filename
+          return np.load(file) if file.exists() else None
+
+      loss = _load(LOSS_FILE)
+      H1_error = _load(H1_ERROR_FILE)
+      L2_error = _load(L2_ERROR_FILE)
+
+      return loss, H1_error, L2_error
 
 
 def latest_run(name) -> Path:
