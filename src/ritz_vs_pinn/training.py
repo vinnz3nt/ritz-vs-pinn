@@ -47,4 +47,5 @@ def optimize(hyper_params):
         H1_history.append(relative_H1_error(network, exact_u,mesh))
         L2_history.append(relative_L2_error(network,exact_u,mesh))
         loss_history.append(loss)
-    return network, loss_history, H1_history, L2_history
+    history = {'loss':loss_history, 'L2_error':L2_history, 'H1_error':H1_history}
+    return network, history

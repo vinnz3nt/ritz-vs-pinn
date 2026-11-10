@@ -5,6 +5,7 @@ This code was written by Claude Opus 5.5
 """
 
 import json
+import numpy as np
 from pathlib import Path
 import equinox as eqx
 from ritz_vs_pinn.config import PATHS, run_dir
@@ -12,12 +13,16 @@ from ritz_vs_pinn.models import build_network
 
 MODEL_FILE = "model.eqx"
 HPARAMS_FILE = "hyperparams.json"
+HISTORY_FILE = "history.json"
 
-def model_store(name, model, hyper_params, timestamp=True) -> Path:
+def model_store(name, model, hyper_params, history, timestamp=True) -> Path:
     path = run_dir(name, timestamp)
     eqx.tree_serialise_leaves(path / MODEL_FILE, model)
+    
     with open(path / HPARAMS_FILE, "w") as f:
         json.dump(hyper_params, f, indent=2)
+    with open(path / HISTORY_FILE, "w") as f:
+        json.dump(history, f, indent=2, default=lambda o: np.asarray(o).tolist())
     return path  # handy for printing or logging where the run went
 
 
@@ -26,10 +31,15 @@ def model_unpack(run):
     path = Path(run)
     if not path.is_absolute():
         path = PATHS.checkpoints / path
+    
     with open(path / HPARAMS_FILE) as f:
         hyper_params = json.load(f)
     model_temp = build_network(hyper_params)
-    return eqx.tree_deserialise_leaves(path / MODEL_FILE, model_temp)
+
+    with open(path / HISTORY_FILE) as f:
+        history = json.load(f)
+
+    return eqx.tree_deserialise_leaves(path / MODEL_FILE, model_temp), history
 
 
 def latest_run(name) -> Path:
