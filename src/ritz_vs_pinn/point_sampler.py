@@ -12,3 +12,9 @@ def boundary_sampler(N, D, rnd_key):
     side = jxr.randint(k2, shape=(N,), minval=0, maxval=D)
     num = jxr.randint(k3, shape=(N,), minval=0, maxval=2).astype(samples.dtype)
     return samples.at[jnp.arange(N), side].set(num) 
+
+#creates a uniform grid for error calculatation and comparison
+def uniform_mesh(n, dim, lower=0.0, upper=1.0):
+    axis = jnp.linspace(lower, upper, n)
+    grids = jnp.meshgrid(*([axis] * dim), indexing="ij")
+    return jnp.stack([g.ravel() for g in grids], axis=-1)

@@ -3,8 +3,9 @@ import optax
 from tqdm import tqdm
 import jax.random as jxr
 from ritz_vs_pinn.models import build_network
-from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler
+from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler, uniform_mesh
 from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEYS
+from norm_error import relative_L2_error, relative_H1_error
 
 @eqx.filter_jit
 def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_interior, N_boundary, D, rnd_key):
@@ -23,6 +24,10 @@ def optimize(hyper_params):
     opt_state = optimizer.init(eqx.filter(network, eqx.is_array))
 
     loss_history = []
+    H1_history = []
+    L2_history = []
+    exact_u = MMS_FUNCTIONS[hyper_params['mms_functions']]['u']
+    mesh =  uniform_mesh(100,hyper_params['dimension'])
     pbar = tqdm(range(hyper_params["n_epochs"]), desc="Training")
     for epoch in pbar:
         rnd_key, step_key = jxr.split(KEYS.get(hyper_params['keyword']))
@@ -39,5 +44,7 @@ def optimize(hyper_params):
             rnd_key=step_key
         )
         pbar.set_postfix(loss=f"{loss:.4f}")
+        H1_history.append(relative_H1_error(network, exact_u,mesh))
+        L2_history.append(relative_L2_error(network,exact_u,mesh))
         loss_history.append(loss)
-    return network, loss_history
+    return network, loss_history, H1_history, L2_history
