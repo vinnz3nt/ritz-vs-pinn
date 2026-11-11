@@ -18,6 +18,13 @@ def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_inter
     new_network = eqx.apply_updates(network, updates)
     return new_network, new_state, loss
 
+@eqx.filter_jit
+def evaluate_errors(network, exact_u, N_interior, N_boundary, D, rnd_key):
+    samps_int, samps_bnd = interior_sampler(N_interior,D,rnd_key), boundary_sampler(N_boundary,D,rnd_key)
+    L2_error = relative_L2_error(network, exact_u, samps_int, samps_bnd)
+    H1_error = relative_H1_error(network, exact_u, samps_int, samps_bnd)
+    return L2_error, H1_error
+
 def optimize(hyper_params):
     network = build_network(hyper_params)
     optimizer = OPTIMIZERS[hyper_params["optimizer"]](*hyper_params["opt_args"])
@@ -28,8 +35,9 @@ def optimize(hyper_params):
     L2_history = []
     exact_u = MMS_FUNCTIONS[hyper_params['mms_functions']]['u']
     pbar = tqdm(range(hyper_params["n_epochs"]), desc="Training")
+    rnd_key = KEYS.get(hyper_params['keyword'])
     for epoch in pbar:
-        rnd_key, step_key = jxr.split(KEYS.get(hyper_params['keyword']))
+        rnd_key, step_key = jxr.split(rnd_key)
         network, opt_state, loss = make_step(
             network = network, 
             state = opt_state, 
@@ -45,9 +53,9 @@ def optimize(hyper_params):
         pbar.set_postfix(loss=f"{loss:.4f}")
         N_interior, N_boundary  = hyper_params["n_interior"], hyper_params["n_boundary"]
         D = hyper_params["dimension"]
-        samps_int, samps_bnd = interior_sampler(N_interior,D,step_key), boundary_sampler(N_boundary,D,step_key) 
-        L2_history.append(relative_L2_error(network, exact_u, samps_int, samps_bnd))
-        H1_history.append(relative_H1_error(network, exact_u, samps_int, samps_bnd))
+        L2_error, H1_error = evaluate_errors(network, exact_u, N_interior, N_boundary, D, step_key)
+        L2_history.append(L2_error)
+        H1_history.append(H1_error)
         loss_history.append(loss)
     history = {'loss':loss_history, 'L2_error':L2_history, 'H1_error':H1_history}
     return network, history

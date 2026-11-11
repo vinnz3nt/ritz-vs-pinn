@@ -13,9 +13,9 @@ from ritz_vs_pinn.models import build_network
 
 MODEL_FILE = "model.eqx"
 HPARAMS_FILE = "hyperparams.json"
-H1_ERROR_FILE = "H1_error.npz"
-L2_ERROR_FILE = "L2_error.npz"
-LOSS_FILE = "loss.npz"
+H1_ERROR_FILE = "H1_error.npy"
+L2_ERROR_FILE = "L2_error.npy"
+LOSS_FILE = "loss.npy"
 
 def model_store(name, model, hyper_params, timestamp=True) -> Path:
     path = run_dir(name, timestamp)
@@ -41,11 +41,11 @@ def model_unpack(run):
 
 
 def history_store(loss, H1_error, L2_error, run):
-    if loss:
+    if loss is not None:
         np.save(run / LOSS_FILE, loss)
-    if H1_error:
+    if H1_error is not None:
         np.save(run / H1_ERROR_FILE, H1_error)
-    if L2_error:
+    if L2_error is not None:
         np.save(run / L2_ERROR_FILE, L2_error)
     print(f"Saved in {run}")
 
