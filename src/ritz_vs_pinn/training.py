@@ -5,7 +5,7 @@ import jax.random as jxr
 from ritz_vs_pinn.models import build_network
 from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler, uniform_mesh
 from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEYS
-from norm_error import relative_L2_error, relative_H1_error
+from ritz_vs_pinn.norm_error import relative_L2_error, relative_H1_error
 
 @eqx.filter_jit
 def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_interior, N_boundary, D, rnd_key):
@@ -27,7 +27,6 @@ def optimize(hyper_params):
     H1_history = []
     L2_history = []
     exact_u = MMS_FUNCTIONS[hyper_params['mms_functions']]['u']
-    mesh =  uniform_mesh(100,hyper_params['dimension'])
     pbar = tqdm(range(hyper_params["n_epochs"]), desc="Training")
     for epoch in pbar:
         rnd_key, step_key = jxr.split(KEYS.get(hyper_params['keyword']))
@@ -44,8 +43,11 @@ def optimize(hyper_params):
             rnd_key=step_key
         )
         pbar.set_postfix(loss=f"{loss:.4f}")
-        H1_history.append(relative_H1_error(network, exact_u,mesh))
-        L2_history.append(relative_L2_error(network,exact_u,mesh))
+        N_interior, N_boundary  = hyper_params["n_interior"], hyper_params["n_boundary"]
+        D = hyper_params["dimension"]
+        samps_int, samps_bnd = interior_sampler(N_interior,D,step_key), boundary_sampler(N_boundary,D,step_key) 
+        L2_history.append(relative_L2_error(network, exact_u, samps_int, samps_bnd))
+        H1_history.append(relative_H1_error(network, exact_u, samps_int, samps_bnd))
         loss_history.append(loss)
     history = {'loss':loss_history, 'L2_error':L2_history, 'H1_error':H1_history}
     return network, history
