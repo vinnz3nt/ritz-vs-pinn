@@ -3,8 +3,11 @@ import equinox as eqx
 import jax.random as jxr
 import jax.numpy as jnp
 
-def interior_sampler(N, D, rnd_key):
-    return jxr.uniform(rnd_key, shape=(N,D),minval=1e-8, maxval=1-1e-8)
+def interior_sampler(N, D, rnd_key, DIRAC = False):
+    samples = jxr.uniform(rnd_key, shape=(N,D), minval=1e-8, maxval=1-1e-8)
+    if DIRAC:
+        samples = samples.at[0].set(0.5)  #if dirac inject a interoir point here
+    return samples
 
 def boundary_sampler(N, D, rnd_key):
     k1, k2, k3 = jxr.split(rnd_key, 3)

@@ -1,10 +1,12 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 #helper
 def scalar(f):
     return lambda x: jnp.reshape(f(x), ())
 
+#monte carlo integration
 def relative_L2_error(model, exact_function, interior_points, boundary_points):
     model_s, exact_s = scalar(model), scalar(exact_function)
 
@@ -35,46 +37,60 @@ def relative_H1_error(model, exact_function, interior_points, boundary_points):
     err_int, norm_int = terms(interior_points)
     err_bnd, norm_bnd = terms(boundary_points)
     return jnp.sqrt((err_int + err_bnd) / (norm_int + norm_bnd))
-# import jax
-# import jax.numpy as jnp
 
-# def relative_L2_error(model,exact_function,interior_points,boundary_points):
-#     model_eval = jax.vmap(model)(interior_points)
-#     exact_eval = jax.vmap(exact_function)(interior_points)
+#with trapezoidal integration
+# _GRID_EPS = 0.02  # width of the Gaussian forcing; the grid is refined around 0.5 to resolve it
 
-#     interior_int = jnp.mean(jnp.square(exact_eval-model_eval))
 
-#     model_bnd = jax.vmap(model)(boundary_points)
-#     exact_bnd = jax.vmap(exact_function)(boundary_points)
+# def _build_grid(eps=_GRID_EPS, N_coarse=512, N_fine=401):
+#     """Sorted 1D grid on [0, 1], dense around 0.5, including the endpoints."""
+#     coarse = np.linspace(0.0, 1.0, N_coarse)
+#     fine = np.linspace(0.5 - 6 * eps, 0.5 + 6 * eps, N_fine)
+#     return np.unique(np.concatenate([coarse, fine]))
 
-#     boundary_int = jnp.mean(jnp.square(exact_bnd-model_bnd))
 
-#     num = jnp.sqrt(interior_int+boundary_int)
+# # Built with NumPy because jnp.unique has a data-dependent output size and fails under jit.
+# _GRID = jnp.asarray(_build_grid())     # shape (N,), sorted
+# _GRID_PTS = _GRID[:, None]             # shape (N, 1), the input shape the network expects
+# _BND_PTS = jnp.array([[0.0], [1.0]])   # boundary points, shape (2, 1)
 
-#     den = jnp.sqrt(jnp.mean(jnp.square(exact_eval)) + jnp.mean(jnp.square(exact_bnd)))
-#     error = num/den
-#     return error
+
+# def _trapz(values):
+#     """Trapezoidal integral of values sampled on the internal grid."""
+#     return jnp.trapezoid(values, _GRID)
+
+# def relative_L2_error(model, exact_function, interior_points, boundary_points):
+#     model_s, exact_s = scalar(model), scalar(exact_function)
+
+#     m_int = jax.vmap(model_s)(_GRID_PTS)
+#     e_int = jax.vmap(exact_s)(_GRID_PTS)
+#     m_bnd = jax.vmap(model_s)(_BND_PTS)
+#     e_bnd = jax.vmap(exact_s)(_BND_PTS)
+
+#     num = _trapz(jnp.square(m_int - e_int)) + jnp.mean(jnp.square(m_bnd - e_bnd))
+#     den = _trapz(jnp.square(e_int)) + jnp.mean(jnp.square(e_bnd))
+#     return jnp.sqrt(num / den)
+
 
 # def relative_H1_error(model, exact_function, interior_points, boundary_points):
-#     model_eval = jax.vmap(model)(interior_points)
-#     exact_eval = jax.vmap(exact_function)(interior_points)
+#     model_s, exact_s = scalar(model), scalar(exact_function)
+#     dmodel, dexact = jax.grad(model_s), jax.grad(exact_s)
 
-#     model_bnd = jax.vmap(model)(boundary_points)
-#     exact_bnd = jax.vmap(exact_function)(boundary_points)
+#     def terms(pts):
+#         # per-point squared errors and norms, integrated afterwards
+#         N = pts.shape[0]
+#         m = jax.vmap(model_s)(pts)
+#         e = jax.vmap(exact_s)(pts)
+#         dm = jax.vmap(dmodel)(pts).reshape(N, -1)
+#         de = jax.vmap(dexact)(pts).reshape(N, -1)
+#         err = jnp.square(m - e) + jnp.sum(jnp.square(dm - de), axis=1)
+#         norm = jnp.square(e) + jnp.sum(jnp.square(de), axis=1)
+#         return err, norm
 
-#     grad_model_int = jax.vmap(jax.grad(model))(interior_points)
-#     exact_grad_int = jax.vmap(jax.grad(exact_function))(interior_points)
+#     err_int, norm_int = terms(_GRID_PTS)
+#     err_bnd, norm_bnd = terms(_BND_PTS)
 
-#     grad_model_bnd = jax.vmap(jax.grad(model))(boundary_points)
-#     exact_grad_bnd = jax.vmap(jax.grad(exact_function))(boundary_points)
+#     num = _trapz(err_int) + jnp.mean(err_bnd)
+#     den = _trapz(norm_int) + jnp.mean(norm_bnd)
+#     return jnp.sqrt(num / den)
 
-#     err_val_int = jnp.mean(jnp.square(exact_eval-model_eval)) + jnp.mean(jnp.square(exact_grad_int-grad_model_int))
-#     err_val_bnd = jnp.mean(jnp.square(exact_bnd-model_bnd)) + jnp.mean(jnp.square(exact_grad_bnd-grad_model_bnd))
-
-#     num = jnp.sqrt(err_val_int+err_val_bnd)
-#     den_int = jnp.mean(jnp.square(exact_eval))+jnp.mean(jnp.square(exact_grad_int))
-#     den_bnd = jnp.mean(jnp.square(exact_bnd))+jnp.mean(jnp.square(exact_grad_bnd))
-#     den = jnp.sqrt(den_int+den_bnd)
-
-#     error = num/den
-#     return error
