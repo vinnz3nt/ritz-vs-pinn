@@ -1,21 +1,18 @@
 """
 Plot the results of scripts/studies/performance_study.py.
 
-Reads every checkpoints/performance_study_<loss>_<D>_<timestamp>/ run (the
-newest one if a (loss, D) pair was run more than once) and makes two figures
-in figures/performance_study/:
+Reads every run in the newest checkpoints/performance_study_<timestamp>/ study
+folder and makes two figures in figures/performance_study/:
 
 error_vs_dimension.pdf  final relative L2 and H1 error against D, Ritz vs PINN
 error_histories.pdf     relative L2 and H1 error against epoch, one curve per D
 """
 
-import json
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 from ritz_vs_pinn.config import PATHS
-from ritz_vs_pinn.model_saving import HPARAMS_FILE, history_unpack
+from ritz_vs_pinn.model_saving import history_unpack, latest_study, study_runs
 from ritz_vs_pinn.plotting import plots, style
 
 STUDY = "performance_study"
@@ -29,24 +26,22 @@ METRICS = {"L2": r"relative $L^2$ error", "H1": r"relative $H^1$ error"}
 TAIL = 50
 
 
-def load_runs():
-    """{method: {D: {"L2": array, "H1": array}}}, newest run per (method, D)."""
+def load_runs(study):
+    """{method: {D: {"L2": array, "H1": array}}} for every run in the study folder."""
     runs = {m: {} for m in METHODS}
-    # Folder names end in a timestamp that sorts by date, so later runs
-    # overwrite earlier ones for the same (method, D).
-    for run in sorted(PATHS.checkpoints.glob(f"{STUDY}_*")):
-        with open(run / HPARAMS_FILE) as f:
-            hp = json.load(f)
+    for run, hp in study_runs(study):
         method, D = hp["loss"], hp["dimension"]
         _, H1, L2 = history_unpack(run)
         if L2 is None or H1 is None:
             print(f"Skipping {run.name}: no error history saved")
             continue
+        if D in runs[method]:
+            raise ValueError(f"Two {method} runs with D={D} in {study}")
         runs[method][D] = {"L2": L2, "H1": H1}
 
     for m in METHODS:
         if not runs[m]:
-            raise FileNotFoundError(f"No {STUDY} runs found for '{m}' in {PATHS.checkpoints}")
+            raise FileNotFoundError(f"No '{m}' runs found in {study}")
     return runs
 
 
@@ -94,7 +89,9 @@ def plot_error_histories(runs):
 
 def main():
     style.apply_style()
-    runs = load_runs()
+    study = latest_study(STUDY)
+    print(f"Study: {study.name}")
+    runs = load_runs(study)
     for m in METHODS:
         print(f"{METHOD_LABELS[m]}: D = {sorted(runs[m])}")
 
