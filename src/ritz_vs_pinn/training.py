@@ -8,9 +8,9 @@ from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEY
 from ritz_vs_pinn.norm_error import relative_L2_error, relative_H1_error
 
 @eqx.filter_jit
-def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_interior, N_boundary, D, rnd_key):
+def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_interior, N_boundary, D, rnd_key, DIRAC = False):
     k_int, k_bnd = jxr.split(rnd_key)
-    interior_points = interior_sampler(N_interior, D, k_int)
+    interior_points = interior_sampler(N_interior, D, k_int, DIRAC = DIRAC)
     boundary_points = boundary_sampler(N_boundary, D, k_bnd)
     interior_fn, boundary_fn = mms_functions['f'], mms_functions['g']
     loss, grad = eqx.filter_value_and_grad(loss_fn)(network, interior_fn, boundary_fn, interior_points, boundary_points, weight)
@@ -19,13 +19,13 @@ def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_inter
     return new_network, new_state, loss
 
 @eqx.filter_jit
-def evaluate_errors(network, exact_u, N_interior, N_boundary, D, rnd_key):
-    samps_int, samps_bnd = interior_sampler(N_interior,D,rnd_key), boundary_sampler(N_boundary,D,rnd_key)
+def evaluate_errors(network, exact_u, N_interior, N_boundary, D, rnd_key, DIRAC = False):
+    samps_int, samps_bnd = interior_sampler(N_interior,D,rnd_key, DIRAC = DIRAC), boundary_sampler(N_boundary,D,rnd_key)
     L2_error = relative_L2_error(network, exact_u, samps_int, samps_bnd)
     H1_error = relative_H1_error(network, exact_u, samps_int, samps_bnd)
     return L2_error, H1_error
 
-def optimize(hyper_params):
+def optimize(hyper_params, DIRAC = False):
     network = build_network(hyper_params)
     optimizer = OPTIMIZERS[hyper_params["optimizer"]](*hyper_params["opt_args"])
     opt_state = optimizer.init(eqx.filter(network, eqx.is_array))
@@ -48,12 +48,13 @@ def optimize(hyper_params):
             N_interior = hyper_params["n_interior"], 
             N_boundary = hyper_params["n_boundary"], 
             D = hyper_params["dimension"], 
-            rnd_key=step_key
+            rnd_key=step_key,
+            DIRAC=DIRAC
         )
         pbar.set_postfix(loss=f"{loss:.4f}")
         N_interior, N_boundary  = hyper_params["n_interior"], hyper_params["n_boundary"]
         D = hyper_params["dimension"]
-        L2_error, H1_error = evaluate_errors(network, exact_u, N_interior, N_boundary, D, step_key)
+        L2_error, H1_error = evaluate_errors(network, exact_u, N_interior, N_boundary, D, step_key,DIRAC=DIRAC)
         L2_history.append(L2_error)
         H1_history.append(H1_error)
         loss_history.append(loss)
