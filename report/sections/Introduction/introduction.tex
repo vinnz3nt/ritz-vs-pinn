@@ -5,13 +5,13 @@ A general PDE in the domain $\Omega$ take the form
 \begin{equation}
     \left\{
     \begin{aligned}
-        \mathcal{L}(u) = f &\quad \mathbf{x}\in \Omega\\
+        \mathcal{D}(u) = f &\quad \mathbf{x}\in \Omega\\
         \mathcal{B}(u) = g &\quad \mathbf{x}\in \partial\Omega\\
     \end{aligned}
     \right. ,
     \label{eq: general PDE}
 \end{equation}
-where $\mathcal{L}$ and $\mathcal{B}$ are interior and boundary differential operators, respectively. $f$ is a the forcing function and $g$ is the boundary data. 
+where $\mathcal{D}$ and $\mathcal{B}$ are interior and boundary differential operators, respectively. $f$ is a the forcing function and $g$ is the boundary data. 
 
 Given that it is impractical---in some cases even impossible---to find an analytical solution to the PDE, 
 the common method is to result to numerical solvers. Such numerical methods usually consist of discretizing $\Omega$, $\mathcal L$ and $\mathcal B$, and solving the discretized PDE, $\mat D \vect u = \vect f$ using any viable iterative solver, commonly LU-factorisation is used.

@@ -1,3 +1,11 @@
+Physics-informed neural networks (PINNs) try to solve a given PDE by inserting the PDE itself into the loss-function,
 \begin{equation}
-    L() = 
+    \mathcal{L}(v) =  \int_\Omega \|\mathcal{D}v - f\|_2^2\, dx + \beta \int_{\partial \Omega} \|\mathcal{B}v - g\|_2^2\, dx.
+    \label{eq: general pinn loss}
 \end{equation}
+Yet again, the boundary conditions has to be enforced weakly with a weight $\beta$. Adapting \eqref{eq: general pinn loss} to the Poisson equation the loss is formulated with
+\begin{equation}
+    L(u_\theta) = \frac{1}{N_I}\sum^{N_I}_{i=0}\left( \Delta u_\theta(x_i) + f(x_i)\right) + \frac{\beta}{N_B}\sum_{i=0}^{N_B}\left(u_\theta(\tilde x_i)-g(\tilde x_i)\right),
+    \label{eq: pinn poisson loss}
+\end{equation}
+where the only difference from \eqref{eq: deep ritz loss} is the first term. As mentioned, the deep ritz method aims to minimize the energy functional, and PINNs minimize the norm-difference between the LHS and RHS of the PDE.

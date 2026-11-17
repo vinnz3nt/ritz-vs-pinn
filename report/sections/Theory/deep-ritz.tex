@@ -1,0 +1,26 @@
+The Deep Ritz method \cite{deepRitz} builds on the principle that the solution of a PDE $u$ has to minimize the corresponding energy functional.
+For the purpose of this project, where we investigate the Poisson equation, the energy functional is
+\begin{equation}
+    I[v] = \int_\Omega \frac{1}{2}|\nabla v|^2 - fv \ dx.
+    \label{eq: Poisson energy functional}
+\end{equation}
+Since the minimizer of \eqref{eq: Poisson energy functional} is the solution to the Poisson equation it is natrual to formulate it as an optimisation problem,
+\begin{equation}
+    \begin{aligned}
+        u & = \operatorname*{arg\,min}_{v \in H^1(\Omega)} \ I[v] \\
+        \text{s.t.} \quad v & = g \quad \text{on } \partial\Omega,
+    \end{aligned}
+    \label{eq: Ritz optimisation problem}
+\end{equation}
+where $g$ is the boundary condition. 
+To solve \eqref{eq: Ritz optimisation problem} we will parameterize $u$ as a neural network $u_\theta = \text{NN}_\theta$.
+The sacrifise of formulating the optimisation problem as a deep learning problem is that the boundary conditions have to be enforced \textit{weakly} in the loss function with weight $\beta$.
+\begin{equation}
+    \mathcal{L}(v) = I[v] + \beta (v - g).
+\end{equation}
+or in a deep learning setting where monte carlo integration is used, 
+\begin{equation}
+    L(u_\theta) = \frac{1}{N_I}\sum^{N_I}_{i=0}\(\frac{1}{2}|\nabla u_\theta (x_i)|^2 + u_\theta(x_i)f(x_i)\) + \frac{\beta}{N_B}\sum_{i=0}^{N_B}\(u_\theta(\tilde x_i)-g(\tilde x_i)\),
+    \label{eq: deep ritz loss}
+\end{equation}
+where $x_i$ are sampled from $\Omega$ and $\tilde x_i$ are sampled from $\delta \Omega$.
