@@ -1,9 +1,11 @@
 import jax.numpy as jnp
 import jax
 import matplotlib.pyplot as plt
-from ritz_vs_pinn.config import MMS_FUNCTIONS
+from ritz_vs_pinn.config import MMS_FUNCTIONS, study_dir
 from ritz_vs_pinn.model_saving import history_store, model_store
 from ritz_vs_pinn.training import optimize
+
+STUDY = "scaling_study"
 
 DIMS = [2,5,10,20,50,100]
 METHODS = ('ritz','pinn')
@@ -33,6 +35,8 @@ hyper_params = {
 
 
 def main():
+    # One folder per invocation: checkpoints/scaling_study_<timestamp>/<method>_D<dim>/
+    study = study_dir(STUDY)
     for dim in DIMS:
         hyper_params['dimension'] = dim
         hyper_params['in_size'] = dim
@@ -40,7 +44,7 @@ def main():
             hyper_params['loss'] = loss_fn
             print(f"Sinus sum: {loss_fn}, D={dim}")
             trained_model, history = optimize(hyper_params)
-            run_path = model_store(f"{dim}D_{loss_fn}_sinus_sum", trained_model, hyper_params)
+            run_path = model_store(f"{loss_fn}_D{dim}", trained_model, hyper_params, parent=study)
             history_store(
                 loss=history["loss"],
                 H1_error=history["H1_error"],

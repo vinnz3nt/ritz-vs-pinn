@@ -62,6 +62,20 @@ def run_dir(name: str, timestamp: bool = True) -> Path:
     return path
 
 
+STUDY_TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S"
+
+
+def study_dir(name: str) -> Path:
+    """Create and return checkpoints/<name>_<timestamp>/ for one invocation of a study.
+
+    Each trained model goes in its own subfolder (see model_saving.model_store's
+    `parent` argument); study-wide files (study.json, metrics.csv) sit next to them.
+    """
+    path = PATHS.checkpoints / f"{name}_{datetime.now():{STUDY_TIMESTAMP_FORMAT}}"
+    path.mkdir(parents=True, exist_ok=False)
+    return path
+
+
 def figure_path(name: str, ext: str = ".pdf") -> Path:
     PATHS.figures.mkdir(parents=True, exist_ok=True)
     return PATHS.figures / f"{name}{ext}"
