@@ -10,3 +10,4 @@ src/ritz_vs_pinn/test.py
 
 checkpoints/*/*.eqx
 checkpoints/*.csv
+checkpoints/*
