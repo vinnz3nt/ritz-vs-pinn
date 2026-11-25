@@ -6,12 +6,52 @@ from ritz_vs_pinn.models import build_network
 from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler, boundary_sobol,interior_sobol
 from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEYS
 from ritz_vs_pinn.norm_error import relative_L2_error, relative_H1_error
+# [SOBOL] imports for fixed Sobol sampling
+import numpy as np
+import jax.numpy as jnp
+from scipy.stats import qmc
+from ritz_vs_pinn.point_sampler import key_to_seed
 
 @eqx.filter_jit
 def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_interior, N_boundary, D, rnd_key, DIRAC = False):
     k_int, k_bnd = jxr.split(rnd_key)
     interior_points = interior_sampler(N_interior, D, k_int, DIRAC = DIRAC)
     boundary_points = boundary_sampler(N_boundary, D, k_bnd)
+    interior_fn, boundary_fn = mms_functions['f'], mms_functions['g']
+    loss, grad = eqx.filter_value_and_grad(loss_fn)(network, interior_fn, boundary_fn, interior_points, boundary_points, weight)
+    updates, new_state = optimizer.update(grad, state, network)
+    new_network = eqx.apply_updates(network, updates)
+    return new_network, new_state, loss
+
+# [SOBOL] Generate fixed Sobol interior/boundary points once, OUTSIDE of jit.
+# Returns jnp arrays of shape (N_interior, D) and (N_boundary, D).
+# Sobol is best balanced when N is a power of 2; otherwise we draw the next
+# power of 2 and truncate. scramble=True avoids the all-zeros first point
+# (a corner of the domain) and makes the point set depend on the seed.
+def sobol_points(N_interior, N_boundary, D, rnd_key, DIRAC=False, scramble=True):
+    k_int, k_bnd, k_side, k_num = jxr.split(rnd_key, 4)
+
+    # Interior
+    m_int = int(np.ceil(np.log2(N_interior)))
+    interior = qmc.Sobol(d=D, scramble=scramble, seed=key_to_seed(k_int)).random_base2(m=m_int)[:N_interior]
+    interior = jnp.clip(jnp.asarray(interior, dtype=jnp.float32), 1e-8, 1 - 1e-8)
+    if DIRAC:
+        interior = interior.at[0].set(0.5)
+
+    # Boundary: Sobol in the cube, then pin one coordinate per point to 0 or 1
+    m_bnd = int(np.ceil(np.log2(N_boundary)))
+    boundary = qmc.Sobol(d=D, scramble=scramble, seed=key_to_seed(k_bnd)).random_base2(m=m_bnd)[:N_boundary]
+    boundary = jnp.asarray(boundary, dtype=jnp.float32)
+    side = jxr.randint(k_side, shape=(N_boundary,), minval=0, maxval=D)
+    num = jxr.randint(k_num, shape=(N_boundary,), minval=0, maxval=2).astype(boundary.dtype)
+    boundary = boundary.at[jnp.arange(N_boundary), side].set(num)
+
+    return interior, boundary
+
+# [SOBOL] Jitted step that takes precomputed points as inputs (traced arrays,
+# so it compiles once and reuses the same points every epoch).
+@eqx.filter_jit
+def make_step_fixed(network, state, loss_fn, optimizer, mms_functions, weight, interior_points, boundary_points):
     interior_fn, boundary_fn = mms_functions['f'], mms_functions['g']
     loss, grad = eqx.filter_value_and_grad(loss_fn)(network, interior_fn, boundary_fn, interior_points, boundary_points, weight)
     updates, new_state = optimizer.update(grad, state, network)
@@ -55,6 +95,45 @@ def optimize(hyper_params, DIRAC = False):
         N_interior, N_boundary  = hyper_params["n_interior"], hyper_params["n_boundary"]
         D = hyper_params["dimension"]
         L2_error, H1_error = evaluate_errors(network, exact_u, N_interior, N_boundary, D, step_key,DIRAC=DIRAC)
+        L2_history.append(L2_error)
+        H1_history.append(H1_error)
+        loss_history.append(loss)
+    history = {'loss':loss_history, 'L2_error':L2_history, 'H1_error':H1_history}
+    return network, history
+
+# [SOBOL] Same as optimize, but trains on a fixed set of Sobol points generated
+# once before the loop. Errors are still evaluated on fresh random points.
+def optimize_sobol(hyper_params, DIRAC = False):
+    network = build_network(hyper_params)
+    optimizer = OPTIMIZERS[hyper_params["optimizer"]](*hyper_params["opt_args"])
+    opt_state = optimizer.init(eqx.filter(network, eqx.is_array))
+
+    loss_history = []
+    H1_history = []
+    L2_history = []
+    exact_u = MMS_FUNCTIONS[hyper_params['mms_functions']]['u']
+    N_interior, N_boundary = hyper_params["n_interior"], hyper_params["n_boundary"]
+    D = hyper_params["dimension"]
+    pbar = tqdm(range(hyper_params["n_epochs"]), desc="Training (Sobol)")
+    rnd_key = KEYS.get(hyper_params['keyword'])
+
+    rnd_key, sobol_key = jxr.split(rnd_key)
+    interior_pts, boundary_pts = sobol_points(N_interior, N_boundary, D, sobol_key, DIRAC=DIRAC)
+
+    for epoch in pbar:
+        rnd_key, step_key = jxr.split(rnd_key)
+        network, opt_state, loss = make_step_fixed(
+            network = network,
+            state = opt_state,
+            loss_fn = LOSS[hyper_params["loss"]],
+            optimizer = optimizer,
+            mms_functions = MMS_FUNCTIONS[hyper_params["mms_functions"]],
+            weight = hyper_params["weight"],
+            interior_points = interior_pts,
+            boundary_points = boundary_pts,
+        )
+        pbar.set_postfix(loss=f"{loss:.4f}")
+        L2_error, H1_error = evaluate_errors(network, exact_u, N_interior, N_boundary, D, step_key, DIRAC=DIRAC)
         L2_history.append(L2_error)
         H1_history.append(H1_error)
         loss_history.append(loss)
