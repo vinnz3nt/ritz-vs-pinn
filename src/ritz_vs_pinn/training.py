@@ -6,7 +6,7 @@ from ritz_vs_pinn.models import build_network
 from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler, boundary_sobol,interior_sobol
 from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEYS
 from ritz_vs_pinn.norm_error import relative_L2_error, relative_H1_error
-# [SOBOL] imports for fixed Sobol sampling
+
 import numpy as np
 import jax.numpy as jnp
 from scipy.stats import qmc
@@ -23,11 +23,6 @@ def make_step(network, state, loss_fn, optimizer, mms_functions, weight, N_inter
     new_network = eqx.apply_updates(network, updates)
     return new_network, new_state, loss
 
-# [SOBOL] Generate fixed Sobol interior/boundary points once, OUTSIDE of jit.
-# Returns jnp arrays of shape (N_interior, D) and (N_boundary, D).
-# Sobol is best balanced when N is a power of 2; otherwise we draw the next
-# power of 2 and truncate. scramble=True avoids the all-zeros first point
-# (a corner of the domain) and makes the point set depend on the seed.
 def sobol_points(N_interior, N_boundary, D, rnd_key, DIRAC=False, scramble=True):
     k_int, k_bnd, k_side, k_num = jxr.split(rnd_key, 4)
 
@@ -48,8 +43,6 @@ def sobol_points(N_interior, N_boundary, D, rnd_key, DIRAC=False, scramble=True)
 
     return interior, boundary
 
-# [SOBOL] Jitted step that takes precomputed points as inputs (traced arrays,
-# so it compiles once and reuses the same points every epoch).
 @eqx.filter_jit
 def make_step_fixed(network, state, loss_fn, optimizer, mms_functions, weight, interior_points, boundary_points):
     interior_fn, boundary_fn = mms_functions['f'], mms_functions['g']
@@ -101,8 +94,6 @@ def optimize(hyper_params, DIRAC = False):
     history = {'loss':loss_history, 'L2_error':L2_history, 'H1_error':H1_history}
     return network, history
 
-# [SOBOL] Same as optimize, but trains on a fixed set of Sobol points generated
-# once before the loop. Errors are still evaluated on fresh random points.
 def optimize_sobol(hyper_params, DIRAC = False):
     network = build_network(hyper_params)
     optimizer = OPTIMIZERS[hyper_params["optimizer"]](*hyper_params["opt_args"])
