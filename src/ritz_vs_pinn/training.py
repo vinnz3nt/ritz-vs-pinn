@@ -3,7 +3,7 @@ import optax
 from tqdm import tqdm
 import jax.random as jxr
 from ritz_vs_pinn.models import build_network
-from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler, uniform_mesh
+from ritz_vs_pinn.point_sampler import boundary_sampler, interior_sampler, boundary_sobol,interior_sobol
 from ritz_vs_pinn.config import OPTIMIZERS, LOSS, ACTIVATIONS, MMS_FUNCTIONS,KEYS
 from ritz_vs_pinn.norm_error import relative_L2_error, relative_H1_error
 
