@@ -3,7 +3,7 @@ import jax
 import matplotlib.pyplot as plt
 from ritz_vs_pinn.config import MMS_FUNCTIONS, study_dir
 from ritz_vs_pinn.model_saving import history_store, model_store
-from ritz_vs_pinn.training import optimize
+from ritz_vs_pinn.training import optimize, optimize_sobol
 
 STUDY = "sobol_study"
 
@@ -46,7 +46,11 @@ def main():
                 Name = 'Uniform'
             print(f"Sinus sum:{Name}, {loss_fn}, D={DIM}")
             hyper_params['loss'] = loss_fn
-            trained_model, history = optimize(hyper_params, SOBOL = sampler)
+            if Name == 'Sobol':
+                trained_model, history = optimize_sobol(hyper_params)
+            else:
+                trained_model, history = optimize(hyper_params)
+            
             run_path = model_store(f"Key_{Name}_{loss_fn}_D{DIM}", trained_model, hyper_params, parent=study)
             history_store(
                 loss=history["loss"],
